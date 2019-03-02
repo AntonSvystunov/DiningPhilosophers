@@ -32,23 +32,34 @@ namespace DiningPhilosophers
 
             while (_accept)
             {
-                Console.WriteLine("Waiting for client...");
-                var client = await _listener.AcceptTcpClientAsync();
-
-                Console.WriteLine("Client connected. Waiting for data.");
-
-                using (var stream = client.GetStream())
+                try
                 {
-                    string command = "";
+                    Console.WriteLine("Waiting for client...");
+                    var client = await _listener.AcceptTcpClientAsync();
 
-                    while (command != null && _accept)
+                    Console.WriteLine("Client connected. Waiting for data.");
+
+                    using (var stream = client.GetStream())
                     {
-                        byte[] buffer = new byte[BUFF_SIZE];
-                        await stream.ReadAsync(buffer, 0, buffer.Length);
+                        string command = "";
 
-                        var response = $"{ProcessCommand(buffer)}\n";
-                        await stream.WriteAsync(Encoding.ASCII.GetBytes(response));
+                        while (command != null && _accept)
+                        {
+                            byte[] buffer = new byte[BUFF_SIZE];
+                            await stream.ReadAsync(buffer, 0, buffer.Length);
+
+                            var response = $"{ProcessCommand(buffer)}\n";
+                            await stream.WriteAsync(Encoding.ASCII.GetBytes(response));
+                        }
                     }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Connection lost");
+                }
+                finally
+                {
+                    Console.WriteLine("Client disconnected");
                 }
             }
         }
@@ -74,11 +85,14 @@ namespace DiningPhilosophers
                 sb.AppendLine($"\tstartl - start all philosophers.");
                 sb.AppendLine($"\tstopl - stop all philosophers.");
                 sb.AppendLine($"\tstatusl - get information about all philosophers.");
+                sb.AppendLine($"\tzerol - set information about all philosophers to zero.");
 
                 sb.AppendLine();
 
                 sb.AppendLine($"\tstartp <indexes of philosophers> - start philosophers with matched indexes");
                 sb.AppendLine($"\tstopp <indexes of philosophers> - stop philosophers with matched indexes");
+                sb.AppendLine($"\tstatusp <indexes of philosophers> - get information about philosophers with matched indexes");
+                sb.AppendLine($"\tzerosp <indexes of philosophers> - set information about philosophers with matched indexes to zero");
 
                 sb.AppendLine();
 
@@ -109,6 +123,12 @@ namespace DiningPhilosophers
             if (command == "statusl")
             {
                 return _table.GetAllPhilosopherStatus();
+            }
+
+            if (command == "zerol")
+            {
+                _table.ZeroStatsAll();
+                return "All philosophers stats cleared";
             }
 
             string[] args = command.Split(' ');
@@ -168,6 +188,73 @@ namespace DiningPhilosophers
                     }
 
                     return $"Philosophers {string.Join(' ', idx)} stoped";
+                }
+                catch
+                {
+                    return "stopp - incorrect arg";
+                }
+            }
+
+            if (args[0] == "statusp")
+            {
+                if (args.Length < 2)
+                {
+                    return "statusp - not enougth args";
+                }
+
+                try
+                {
+                    var idx = new List<int>();
+                    for (int i = 1; i < args.Length; ++i)
+                    {
+                        idx.Add(int.Parse(args[i]));
+                    }
+
+
+                    var sb = new StringBuilder();
+
+                    foreach (var ix in idx)
+                    {
+                        string temp;
+                        if (!_table.GetPhilosopherStatus(ix, out temp))
+                        {
+                            return $"No such philosopher {ix}";
+                        }
+                        sb.Append(temp);
+                    }
+
+                    return sb.ToString();
+                }
+                catch
+                {
+                    return "statusp - incorrect arg";
+                }
+            }
+
+            if (args[0] == "zerop")
+            {
+                if (args.Length < 2)
+                {
+                    return "zerop - not enougth args";
+                }
+
+                try
+                {
+                    var idx = new List<int>();
+                    for (int i = 1; i < args.Length; ++i)
+                    {
+                        idx.Add(int.Parse(args[i]));
+                    }
+
+                    foreach (var ix in idx)
+                    {
+                        if (!_table.ZeroStatsPhilosopher(ix))
+                        {
+                            return $"No such philosopher {ix}";
+                        }
+                    }
+
+                    return $"Philosophers {string.Join(' ', idx)} stats set to zero";
                 }
                 catch
                 {

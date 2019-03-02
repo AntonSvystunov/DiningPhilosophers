@@ -154,7 +154,7 @@ namespace DiningPhilosophers.Classes
 
         public void SaveFrame()
         {
-            LastFrame = $"{Name}\n\tEating time: {EatingTime} ms\n\tThinking time: {ThinkingTime} ms\n\tStarvation time: {StarvationTime} ms";
+            LastFrame = $"{Name}\n\tEating time: {EatingTime} ms\n\tThinking time: {ThinkingTime} ms\n\tStarvation time: {StarvationTime} ms\n\tStarvation per cent: {((EatingTime + ThinkingTime + StarvationTime) > 0 ? 100 * StarvationTime / (EatingTime + ThinkingTime + StarvationTime) : 0)}%";
         }
 
         public void PrintInfo()
@@ -164,6 +164,12 @@ namespace DiningPhilosophers.Classes
                 SaveFrame();
             }
             Console.WriteLine(LastFrame);
+        }
+
+        public void SetStatsToZero()
+        {
+            EatingTime = ThinkingTime = StarvationTime = 0;
+            sw.Restart();
         }
 
     }

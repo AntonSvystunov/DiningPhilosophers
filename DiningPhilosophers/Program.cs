@@ -24,6 +24,7 @@ namespace DiningPhilosophers
             }
             finally
             {
+                Console.WriteLine("Press any key to exit...");
                 Console.ReadLine();
             }
         }

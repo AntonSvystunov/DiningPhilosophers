@@ -68,17 +68,6 @@ namespace DiningPhilosophers.Classes
             }
         }
 
-        public void TerminateAll()
-        {
-            foreach (var phil in _philosophers)
-            {
-                if (phil.isRuning)
-                {
-                    phil.Terminate();
-                }
-            }
-        }
-
         public bool TerminatePhilosopher(int index)
         {
             if (index >= Size)
@@ -92,6 +81,36 @@ namespace DiningPhilosophers.Classes
             }
 
             _philosophers[index].Terminate();
+            return true;
+        }
+
+        public void TerminateAll()
+        {
+            foreach (var phil in _philosophers)
+            {
+                if (phil.isRuning)
+                {
+                    phil.Terminate();
+                }
+            }
+        }
+
+        public void ZeroStatsAll()
+        {
+            foreach (var phil in _philosophers)
+            {
+                phil.SetStatsToZero();
+            }
+        }
+
+        public bool ZeroStatsPhilosopher(int index)
+        {
+            if (index >= Size)
+            {
+                return false;
+            }
+
+            _philosophers[index].SetStatsToZero();
             return true;
         }
 
@@ -124,5 +143,6 @@ namespace DiningPhilosophers.Classes
             
             return sb.ToString();
         }
+
     }
 }
